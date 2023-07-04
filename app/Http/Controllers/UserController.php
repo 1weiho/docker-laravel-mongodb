@@ -7,8 +7,25 @@ use MongoDB\Client;
 
 class UserController extends Controller
 {
-    public function index()
-    {
+    // list all users
+    public function list() {
+        // Create a new MongoDB client
+        $client = new Client("mongodb://database:27017");
+
+        // Select the database
+        $database = $client->laravel;
+
+        // Select the collection
+        $collection = $database->users;
+
+        // Find all documents
+        $users = $collection->find()->toArray();
+        
+        return response()->json($users);
+    }
+
+    // add user
+    public function add(Request $request) {
         // Create a new MongoDB client
         $client = new Client("mongodb://database:27017");
 
@@ -20,17 +37,24 @@ class UserController extends Controller
 
         // Insert a new document
         $result = $collection->insertOne([
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => bcrypt('secret'),
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
         ]);
 
-        // Find all documents
-        $users = $collection->find();
-
-        // Display the users
-        foreach ($users as $user) {
-            echo $user['name'] . ' - ' . $user['email'] . '<br>';
+        // check if user was added
+        if ($result->getInsertedCount() == 1) {
+            $result = [
+                'status' => 'success',
+                'message' => 'User was added successfully'
+            ];
+        } else {
+            $result = [
+                'status' => 'error',
+                'message' => 'User was not added'
+            ];
         }
+
+        return response()->json($result);
     }
 }
