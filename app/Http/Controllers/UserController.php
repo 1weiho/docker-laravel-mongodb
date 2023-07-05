@@ -57,4 +57,34 @@ class UserController extends Controller
 
         return response()->json($result);
     }
+
+    // delete all users
+    public function deleteAll() {
+        // Create a new MongoDB client
+        $client = new Client("mongodb://database:27017");
+
+        // Select the database
+        $database = $client->laravel;
+
+        // Select the collection
+        $collection = $database->users;
+
+        // Delete all documents
+        $result = $collection->deleteMany([]);
+
+        // check if users were deleted
+        if ($result->getDeletedCount() > 0) {
+            $result = [
+                'status' => 'success',
+                'message' => 'Users were deleted successfully'
+            ];
+        } else {
+            $result = [
+                'status' => 'error',
+                'message' => 'Users were not deleted'
+            ];
+        }
+
+        return response()->json($result);
+    }
 }
